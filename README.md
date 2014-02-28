@@ -12,3 +12,8 @@ the original image has been modified since the cached image was created, so the 
 out of sync.
 
 View demo: http://demo.gridlight-design.co.uk/image-service.html
+
+Requirements
+------------
+
+The PHP script required the [PHP GD Graphics Library](http://www.php.net/gd).
