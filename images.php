@@ -6,7 +6,7 @@
  * Note: 'base file' means the actual full image (before the ?)
  * 'derived file' means anything that's been created from the base file.
  *
- * @author Andy Kirk <andy.kirk@npeu.ox.ac.uk
+ * @author Andy Kirk <andy.kirk@npeu.ox.ac.uk>
  * @copyright Copyright (c) 2014
  * @version 0.1
  */
