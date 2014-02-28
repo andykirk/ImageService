@@ -4,12 +4,11 @@
  *
  * Handles image resizing as requested via query string.
  * Note: 'base file' means the actual full image (before the ?)
- * 'derived file' means anything that's been created from  a modified base file.
+ * 'derived file' means anything that's been created from the base file.
  *
- * @author akirk
- * @copyright Copyright (c) 2013
+ * @author Andy Kirk <andy.kirk@npeu.ox.ac.uk
+ * @copyright Copyright (c) 2014
  * @version 0.1
- * @access public
  */
 class ImageService {
 
@@ -28,8 +27,8 @@ class ImageService {
 		$cache_dir = $pathinfo['dirname'] . DIRECTORY_SEPARATOR . $pathinfo['filename'];
 		$file      = $root . $path;
 
-		// This isn't really necessary as htaccess already checked the base file
-		// already exists, but included just in case:
+		// This isn't really necessary as htaccess already checked the base file exists, but 
+        // included just in case:
 		if (!file_exists($file)) {
 			return;
 		}
