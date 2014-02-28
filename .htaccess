@@ -1,0 +1,13 @@
+# ----------------------------------------------------------------------
+# Single Entry Point
+# ----------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+	Options +FollowSymlinks
+	RewriteEngine On
+	RewriteBase /img
+
+	RewriteCond %{REQUEST_FILENAME} -f
+	RewriteCond %{QUERY_STRING} s=
+	RewriteRule ^(.+)\.(png|jpg|gif)$ images.php [L]
+	#RewriteRule ^(.+)\.(png|jpg|gif)$ images.php?i=$1&e=$2$3 [QSA,L]
+</IfModule>
