@@ -1,7 +1,6 @@
 <?php
 /**
  * ImageService
- * Test
  *
  * Handles image resizing as requested via query string.
  * Note: 'base file' means the actual full image (before the ?)
