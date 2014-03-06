@@ -1,0 +1,23 @@
+{
+  "name": "ImageService",
+  "version": "0.0.1",
+  "homepage": "https://github.com/andykirk/ImageService",
+  "authors": [
+    "Andy Kirk <andy.kirk@npeu.ox.ac.uk>"
+  ],
+  "description": "A small service for providing resized images based on query string.",
+  "keywords": [
+    "image",
+    "service",
+    "resize",
+    "php"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
