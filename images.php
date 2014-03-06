@@ -37,7 +37,6 @@ class ImageService {
         $ext  = $pathinfo['extension'];
         $type = $ext;
         if ($ext == 'jpeg') {
-        if ($ext == 'jpeg') {
             $ext = 'jpg';
         }
         if ($type == 'jpg') {
