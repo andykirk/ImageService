@@ -1,6 +1,7 @@
 <?php
 /**
  * ImageService
+ * https://github.com/andykirk/ImageService
  *
  * Handles image resizing as requested via query string.
  * Note: 'base file' means the actual full image (before the ?)
@@ -27,7 +28,7 @@ class ImageService {
         $cache_dir = $pathinfo['dirname'] . DIRECTORY_SEPARATOR . $pathinfo['filename'];
         $file      = $root . $path;
 
-        // This isn't really necessary as htaccess already checked the base file exists, but 
+        // This isn't really necessary as .htaccess already checked the base file exists, but 
         // included just in case:
         if (!file_exists($file)) {
             return;
