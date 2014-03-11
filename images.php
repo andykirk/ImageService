@@ -13,117 +13,128 @@
  */
 class ImageService {
 
-    public $header = 'HTTP/1.0 404 Not Found';
-    public $output = '';
+	public $header = 'HTTP/1.0 404 Not Found';
+	public $output = '';
 
-    public function __construct()
-    {
-    }
+	public function __construct()
+	{
+	}
 
-    public function run()
-    {
-        $path      = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
-        $pathinfo  = pathinfo($path);
-        $root      = $_SERVER['DOCUMENT_ROOT'];
-        $cache_dir = $pathinfo['dirname'] . DIRECTORY_SEPARATOR . $pathinfo['filename'];
-        $file      = $root . $path;
+	public function run()
+	{
+		$path      = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
+		$pathinfo  = pathinfo($path);
+		$root      = $_SERVER['DOCUMENT_ROOT'];
+		$cache_dir = $pathinfo['dirname'] . DIRECTORY_SEPARATOR . $pathinfo['filename'];
+		$file      = $root . $path;
 
-        // This isn't really necessary as .htaccess already checked the base file exists, but 
+		// This isn't really necessary as .htaccess already checked the base file exists, but 
         // included just in case:
-        if (!file_exists($file)) {
-            return;
-        }
-        $size = (int) $_GET['s'];
-        $ext  = $pathinfo['extension'];
-        $type = $ext;
-        if ($ext == 'jpeg') {
-            $ext = 'jpg';
-        }
-        if ($type == 'jpg') {
-            $type = 'jpeg';
-        }
+		if (!file_exists($file)) {
+			return;
+		}
+		$size   = (int) $_GET['s'];
+        
+        // Whether the image should be at least s or max s:
+        $minmax = (isset($_GET['m']) && $_GET['m'] == '1')
+                ? 'min'
+                : '';
+                
+		$ext  = $pathinfo['extension'];
+		$type = $ext;
+		if ($ext == 'jpeg') {
+			$ext = 'jpg';
+		}
+		if ($type == 'jpg') {
+			$type = 'jpeg';
+		}
 
-        // Create the folder to hold the cached images:
-        if (!file_exists($root . $cache_dir)) {
-            mkdir($root . $cache_dir);
-        }
+		// Create the folder to hold the cached images:
+		if (!file_exists($root . $cache_dir)) {
+			mkdir($root . $cache_dir);
+		}
 
-        $base_lastmod = filemtime($file);
-        $derived_name = md5($base_lastmod . $size);
-        $derived_file = $root . $cache_dir . DIRECTORY_SEPARATOR . $derived_name . '.' . $ext;
-        if (file_exists($derived_file)) {
-            $this->setResult($derived_file);
-            return;
-        }
+		$base_lastmod = filemtime($file);
+		$derived_name = md5($base_lastmod . $size . $minmax);
+		$derived_file = $root . $cache_dir . DIRECTORY_SEPARATOR . $derived_name . '.' . $ext;
+		if (file_exists($derived_file)) {
+			$this->setResult($derived_file);
+			return;
+		}
+		if (!$this->scaleImage($file, $derived_file, $size, $type, 100, $minmax)) {
+		 	return;
+		}
 
-        if (!$this->scaleImage($file, $derived_file, $size, $type)) {
-             return;
-        }
+		$this->setResult($derived_file);
+		return;
+	}
 
-        $this->setResult($derived_file);
-        return;
-    }
-
-    protected function scaleImage($src_file, $dest_file, $size, $type, $quality = 100)
-    {
-        $src_data = getimagesize($src_file);
-        $src_w    = $src_data[0];
-        $src_h    = $src_data[1];
-
-        if ($src_w > $src_h) {
-            $dst_h = round($size * ($src_h / $src_w));
-            $dst_w = $size;
+	protected function scaleImage($src_file, $dest_file, $size, $type, $quality = 100, $minmax = '')
+	{
+		$src_data = getimagesize($src_file);
+		$src_w    = $src_data[0];
+		$src_h    = $src_data[1];
+        if ($minmax == '') {
+            if ($src_w > $src_h) {
+                $dst_h = round($size * ($src_h / $src_w));
+                $dst_w = $size;
+            } else {
+                $dst_w = round($size * ($src_w /  $src_h));
+                $dst_h = $size;
+            }
         } else {
-            $dst_w = round($size * ($src_w /  $src_h));
-            $dst_h = $size;
+            if ($src_w > $src_h) {
+                $dst_h = $size;
+                $dst_w = round($size * ($src_w / $src_h));
+            } else {
+                $dst_w = $size;
+                $dst_h = round($size * ($src_h /  $src_w));
+            }
         }
-
-        $new_img = imagecreatetruecolor($dst_w, $dst_h);
-        $f       = 'imagecreatefrom' . $type;
-        $src_img = $f($src_file);
         
-        
-        
-        Imagefill($new_img, 0, 0, imagecolorallocate($new_img, 255, 255, 255));
-        
-        
-        imagecopyresampled($new_img, $src_img, 0, 0, 0, 0, $dst_w, $dst_h, $src_w, $src_h);
+		$new_img = imagecreatetruecolor($dst_w, $dst_h);
+		$f       = 'imagecreatefrom' . $type;
+		$src_img = $f($src_file);
+					
+		Imagefill($new_img, 0, 0, imagecolorallocate($new_img, 255, 255, 255));
+				
+		imagecopyresampled($new_img, $src_img, 0, 0, 0, 0, $dst_w, $dst_h, $src_w, $src_h);
 
-        switch ($type) {
-            case 'jpeg':
-                $r = imagejpeg($new_img, $dest_file, $quality);
-                break;
-            case 'png':
-                $r = imagepng($new_img, $dest_file);
-                break;
-            case 'gif':
-                $r = imagegif($new_img, $dest_file);
-                break;
-        } // switch
-        if (!$r) {
-             return false;
-        }
-        chmod($dest_file, 0777);
-        return true;
-    }
+		switch ($type) {
+			case 'jpeg':
+				$r = imagejpeg($new_img, $dest_file, $quality);
+				break;
+			case 'png':
+				$r = imagepng($new_img, $dest_file);
+				break;
+			case 'gif':
+				$r = imagegif($new_img, $dest_file);
+				break;
+		} // switch
+		if (!$r) {
+		 	return false;
+		}
+		chmod($dest_file, 0777);
+		return true;
+	}
 
-    protected function setImageContent($file)
-    {
-        $this->output = file_get_contents($file);
-    }
+	protected function setImageContent($file)
+	{
+		$this->output = file_get_contents($file);
+	}
 
-    protected function setImageHeader($mime)
-    {
-        $this->header = 'Content-type: ' . $mime;
-    }
+	protected function setImageHeader($mime)
+	{
+		$this->header = 'Content-type: ' . $mime;
+	}
 
-    protected function setResult($file)
-    {
-        $data = getimagesize($file);
-        $this->setImageHeader($data['mime']);
-        $this->setImageContent($file);
-        return;
-    }
+	protected function setResult($file)
+	{
+		$data = getimagesize($file);
+		$this->setImageHeader($data['mime']);
+		$this->setImageContent($file);
+		return;
+	}
 }
 
 $img_service = new ImageService;
