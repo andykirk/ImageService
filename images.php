@@ -13,8 +13,11 @@
  */
 class ImageService {
 
-	public $header = 'HTTP/1.0 404 Not Found';
-	public $output = '';
+	public $header      = 'HTTP/1.0 404 Not Found';
+	public $output      = '';
+    
+    protected $dir_grp  = 'www-data';
+    protected $dir_perm = 0775;
 
 	public function __construct()
 	{
@@ -52,6 +55,8 @@ class ImageService {
 		// Create the folder to hold the cached images:
 		if (!file_exists($root . $cache_dir)) {
 			mkdir($root . $cache_dir);
+            chown($root . $cache_dir, $this->dir_grp);
+            chmod($root . $cache_dir, $this->dir_perm);
 		}
 
 		$base_lastmod = filemtime($file);
