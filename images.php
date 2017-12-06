@@ -18,19 +18,25 @@ class ImageService {
     
     protected $dir_grp  = 'www-data';
     protected $dir_perm = 0775;
+    
+    protected $path;
+    protected $pathinfo;
+    public $cache_root;
 
 	public function __construct()
 	{
+        $this->path       = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
+		$this->pathinfo   = pathinfo($this->path);
+        $this->cache_root = $this->pathinfo['dirname'];
 	}
 
 	public function run()
 	{
-		$path      = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
-		$pathinfo  = pathinfo($path);
+		
 		$root      = $_SERVER['DOCUMENT_ROOT'];
-		$cache_dir = $pathinfo['dirname'] . DIRECTORY_SEPARATOR . $pathinfo['filename'];
-		$file      = $root . $path;
-
+		$cache_dir = $this->cache_root . DIRECTORY_SEPARATOR . $this->pathinfo['filename'];
+		$file      = $root . $this->path;
+        
 		// This isn't really necessary as .htaccess already checked the base file exists, but 
         // included just in case:
 		if (!file_exists($file)) {
@@ -43,7 +49,7 @@ class ImageService {
                 ? 'min'
                 : '';
                 
-		$ext  = $pathinfo['extension'];
+		$ext  = strtolower($this->pathinfo['extension']);
 		$type = $ext;
 		if ($ext == 'jpeg') {
 			$ext = 'jpg';
@@ -51,17 +57,21 @@ class ImageService {
 		if ($type == 'jpg') {
 			$type = 'jpeg';
 		}
-
-		// Create the folder to hold the cached images:
+        
+		mkdir($root . $cache_dir, $this->dir_perm, true);
+        // Create the folder to hold the cached images:
 		if (!file_exists($root . $cache_dir)) {
-			mkdir($root . $cache_dir);
-            chown($root . $cache_dir, $this->dir_grp);
-            chmod($root . $cache_dir, $this->dir_perm);
+			mkdir($root . $cache_dir, $this->dir_perm, true);
+            #mkdir($root . $cache_dir);
+            #chown($root . $cache_dir, $this->dir_grp);
+            #chmod($root . $cache_dir, $this->dir_perm);
 		}
 
 		$base_lastmod = filemtime($file);
+   
 		$derived_name = md5($base_lastmod . $size . $minmax);
 		$derived_file = $root . $cache_dir . DIRECTORY_SEPARATOR . $derived_name . '.' . $ext;
+        
 		if (file_exists($derived_file)) {
 			$this->setResult($derived_file);
 			return;

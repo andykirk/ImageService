@@ -8,6 +8,6 @@
 
 	RewriteCond %{REQUEST_FILENAME} -f
 	RewriteCond %{QUERY_STRING} s=
-	RewriteRule ^(.+)\.(png|jpg|gif)$ images.php [L]
+	RewriteRule ^(.+)\.(png|jpg|gif)$ images.php [NC,L]
 	#RewriteRule ^(.+)\.(png|jpg|gif)$ images.php?i=$1&e=$2$3 [QSA,L]
 </IfModule>
